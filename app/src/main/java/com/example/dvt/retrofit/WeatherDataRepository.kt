@@ -1,14 +1,18 @@
 package com.example.dvt.retrofit
 
+import android.app.Application
+import android.content.Context
 import androidx.lifecycle.MutableLiveData
+import com.example.dvt.helper_class.FormatterHelper
 import com.example.dvt.helper_class.TodayWeatherData
 import com.example.dvt.helper_class.WeatherForecast
+import com.example.dvt.roomdatabase.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class WeatherDataRepository {
+class WeatherDataRepository() {
 
     companion object {
 
@@ -29,7 +33,60 @@ class WeatherDataRepository {
                             
                             if (response.isSuccessful) {
 
-                                weatherForecastLiveData.postValue(response.body() )
+                                val responseBody = response.body()
+
+                                if (responseBody != null){
+
+                                    val cod = responseBody.cod
+                                    val cnt = responseBody.cnt
+                                    val list = responseBody.list
+                                    for (item in list){
+
+                                        val dt  = item.dt
+                                        val visibility  = item.visibility
+                                        val dt_txt  = item.dt_txt
+
+                                        val main  = item.main
+                                        val temp = main.temp
+                                        val feels_like = main.feels_like
+                                        val temp_min = main.temp_min
+                                        val temp_max = main.temp_max
+                                        val pressure = main.pressure
+                                        val humidity = main.humidity
+
+                                        val clouds  = item.clouds
+                                        val all = clouds.all
+
+                                        val wind  = item.wind
+                                        val speed = wind.speed
+                                        val deg = wind.deg
+
+
+                                        val weatherList  = item.weather
+                                        for (weatherItem in weatherList){
+
+                                            val id = weatherItem.id
+                                            val weatherMain = weatherItem.main
+                                            val description = weatherItem.description
+                                            val icon = weatherItem.icon
+
+                                        }
+
+
+
+
+
+                                    }
+
+
+                                    //Save data to Room database
+
+
+//                                weatherForecastLiveData.postValue(response.body() )
+
+                                }
+
+
                             }
 
                         }
@@ -56,7 +113,6 @@ class WeatherDataRepository {
                         response.let {
 
                             if (response.isSuccessful) {
-
                                 todayWeatherLiveData.postValue(response.body() )
                             }
 

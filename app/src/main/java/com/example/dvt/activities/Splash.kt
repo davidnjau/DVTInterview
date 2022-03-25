@@ -19,7 +19,6 @@ class Splash : AppCompatActivity() {
         setContentView(R.layout.activity_splash)
 
         roomViewModel = RoomViewModel(this.application)
-        roomViewModel.getDevControlLiveData()
 
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         //This method is used so that your splash activity

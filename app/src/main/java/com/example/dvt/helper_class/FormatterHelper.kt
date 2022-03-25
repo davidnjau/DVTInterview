@@ -6,17 +6,38 @@ import java.util.*
 
 class FormatterHelper {
 
-    fun getDateTime(dateTime:String): String{
+    fun getDate(dateTime:String): String{
         val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        val date1 = dateFormat.parse(dateTime.substring(0, 19))
-        val df = SimpleDateFormat("dd-MMM-yyyy")
+        val date1 = dateFormat.parse(dateTime.substring(0, 18))
+        val df = SimpleDateFormat("yyyy-MM-dd")
         return df.format(date1)
     }
 
-    fun getTodayDate(): Date {
-        val milliSeconds = System.currentTimeMillis()
-        return Date(milliSeconds)
+    fun getTime(dateTime:String): String{
+        val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val date1 = dateFormat.parse(dateTime.substring(0, 18))
+        val df = SimpleDateFormat("HH:mm:ss")
+        return df.format(date1)
     }
+
+    fun getTodayDateTime(): String {
+        val milliSeconds = System.currentTimeMillis()
+        val todayDate = getDateFromMilli(milliSeconds)
+        return getDateTime(todayDate)
+    }
+
+    fun getDateFromMilli(milliseconds: Long): Date {
+        return Date(milliseconds)
+    }
+
+    fun getDateTime(date: Date):String{
+        val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        return dateFormat.format(date)
+    }
+
+
+
+
 
 
 }

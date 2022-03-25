@@ -37,9 +37,25 @@ data class TodayWeatherData(
 
 )
 
-data class Sys(val type:Int, val id:Int, val country: String, val sunrise:Int, val sunset:Int)
+data class Sys(
+    val type:Int,
+    val id:Int,
+    val country: String,
+    val sunrise:Long,
+    val sunset:Long)
 data class Clouds(val all:Int)
-data class Wind(val speed: Double, val deg: Double)
-data class Main(val temp: Double, val feels_like: Double, val temp_min: Double, val temp_max: Double, val pressure: Double, val humidity: Double)
-data class CoordDetails(val lon: Double, val  lat: Double)
-data class Weather(val id: Int, val main: String, val description: String, val icon:String)
+data class Wind(val speed: Double,
+                val deg: Double)
+data class Main(val temp: Double,
+                val feels_like: Double,
+                val temp_min: Double,
+                val temp_max: Double,
+                val pressure: Double,
+                val humidity: Double)
+data class CoordDetails(
+    val lon: Double,
+    val lat: Double)
+data class Weather(val id: Int,
+                   val main: String,
+                   val description: String,
+                   val icon:String)

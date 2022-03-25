@@ -10,6 +10,7 @@ data class TodayWeatherInfo(
         val lon: Double,
         val name: String,
         val date: String,
+        val time: String,
 
         val temp: Double,
         val feels_like: Double,
