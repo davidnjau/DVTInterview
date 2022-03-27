@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Dvt</string>
+
+    <string name="latitude">latitude</string>
+    <string name="longitude">longitude</string>
+
+
+
 </resources>

@@ -1,5 +1,8 @@
 package com.example.dvt.roomdatabase
 
+import android.content.Context
+import androidx.core.app.ActivityCompat
+import com.example.dvt.R
 import com.example.dvt.helper_class.FormatterHelper
 import com.example.dvt.helper_class.TodayWeatherData
 
@@ -84,22 +87,32 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
     }
 
-    suspend fun addTodayWeather(todayWeatherData: TodayWeatherData) {
+    suspend fun addTodayWeather(context:Context, todayWeatherData: TodayWeatherData) {
 
-        val lat = 9.2
-        val lon = 8.0
+        val latitudeKey = context.getString(R.string.latitude)
+        val longitudeKey = context.getString(R.string.longitude)
 
-        val todayDateTime = formatterHelper.getTodayDateTime()
-        val todayDate = formatterHelper.getDate(todayDateTime)
+        val latitude = formatterHelper.retrieveSharedPreference(context, latitudeKey)
+        val longitude = formatterHelper.retrieveSharedPreference(context, longitudeKey)
 
-        val todayWeatherInfo = getResponseData(todayWeatherData)
+        if (latitude != null && longitude != null){
 
-        //Check if date exists with lat and lon
-        val isSaved = checkDateLatLon(todayDate, lat, lon)
-        if (!isSaved){
-            //Does not exist so save it
-            weatherDao.addTodayWeather(todayWeatherInfo)
+            val todayDateTime = formatterHelper.getTodayDateTime()
+            val todayDate = formatterHelper.getDate(todayDateTime)
+
+            val todayWeatherInfo = getResponseData(todayWeatherData)
+
+            //Check if date exists with lat and lon
+            val isSaved = checkDateLatLon(todayDate, latitude.toDouble(), longitude.toDouble())
+            if (!isSaved){
+                //Does not exist so save it
+                weatherDao.addTodayWeather(todayWeatherInfo)
+            }
         }
+
+
+
+
 
 
     }

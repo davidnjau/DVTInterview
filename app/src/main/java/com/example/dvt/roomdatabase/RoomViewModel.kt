@@ -1,6 +1,7 @@
 package com.example.dvt.roomdatabase
 
 import android.app.Application
+import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import com.example.dvt.helper_class.TodayWeatherData
 import kotlinx.coroutines.CoroutineScope
@@ -19,11 +20,11 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
     }
 
 
-    fun addTodayWeather(todayWeatherData: TodayWeatherData){
+    fun addTodayWeather(context: Context, todayWeatherData: TodayWeatherData){
 
         CoroutineScope(Dispatchers.IO).launch {
 
-            repository.addTodayWeather(todayWeatherData)
+            repository.addTodayWeather(context, todayWeatherData)
 
         }
 

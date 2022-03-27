@@ -3,6 +3,7 @@ package com.example.dvt.retrofit
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
+import com.example.dvt.R
 import com.example.dvt.helper_class.FormatterHelper
 import com.example.dvt.helper_class.TodayWeatherData
 import com.example.dvt.helper_class.WeatherForecast
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class WeatherDataRepository() {
+
 
     companion object {
 
@@ -100,24 +102,41 @@ class WeatherDataRepository() {
         //Get today's weather data
         fun getTodayWeather(): MutableLiveData<TodayWeatherData> {
 
+            val context = Application().applicationContext
+            val formatterHelper = FormatterHelper()
+
             val todayWeatherLiveData: MutableLiveData<TodayWeatherData> = MutableLiveData<TodayWeatherData>()
 
             CoroutineScope(Dispatchers.Default).launch {
 
                 launch(Dispatchers.IO) {
 
-                    val apiInterface = ApiInterface.create()
-                    var response = apiInterface.getTodayWeather(-1.2240538, 36.6810324, "2567e372cd849bf839c9fe854da69a5c").execute()
+                    val latitudeKey = context.getString(R.string.latitude)
+                    val longitudeKey = context.getString(R.string.longitude)
 
-                    withContext(Dispatchers.Default) {
-                        response.let {
+                    val latitude = formatterHelper.retrieveSharedPreference(context, latitudeKey)
+                    val longitude = formatterHelper.retrieveSharedPreference(context, longitudeKey)
 
-                            if (response.isSuccessful) {
-                                todayWeatherLiveData.postValue(response.body() )
+                    if (latitude != null && longitude != null){
+
+                        val apiInterface = ApiInterface.create()
+                        var response = apiInterface.getTodayWeather(latitude.toDouble(),
+                            longitude.toDouble(),
+                            "2567e372cd849bf839c9fe854da69a5c").execute()
+
+                        withContext(Dispatchers.Default) {
+                            response.let {
+
+                                if (response.isSuccessful) {
+                                    todayWeatherLiveData.postValue(response.body() )
+                                }
+
                             }
-
                         }
+
                     }
+
+
                 }
 
             }
