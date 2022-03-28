@@ -5,7 +5,7 @@
       <map>
         <entry key="app/src/main/res/drawable/bac_outline_trans.xml" value="0.403" />
         <entry key="app/src/main/res/layout-xlarge/activity_main.xml" value="0.302734375" />
-        <entry key="app/src/main/res/layout/activity_main.xml" value="0.38958333333333334" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="app/src/main/res/layout/activity_splash.xml" value="0.4036458333333333" />
         <entry key="app/src/main/res/layout/forecast_data.xml" value="0.4036458333333333" />
         <entry key="app/src/main/res/menu/bottom_navigation_menu.xml" value="0.4036458333333333" />

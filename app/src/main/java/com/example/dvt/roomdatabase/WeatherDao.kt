@@ -30,7 +30,17 @@ interface WeatherDao {
     @Query("SELECT * from weather_forecast_data")
     suspend fun getForecastWeather(): List<WeatherForecastInfo>
 
+    @Insert
+    suspend fun addFavWeather(favouriteLocationInfo:FavouriteLocationInfo)
 
+    @Query("SELECT EXISTS (SELECT 1 FROM fav_location_info WHERE lat =:lat AND lon =:lon)")
+    fun checkFavData(lat:Double, lon:Double): Boolean
+
+    @Query("SELECT * from fav_location_info WHERE lat =:lat AND lon =:lon")
+    suspend fun getFavLocations(lat:Double, lon:Double): FavouriteLocationInfo?
+
+    @Query("DELETE FROM fav_location_info WHERE id = :id")
+    suspend fun deleteFavData(id:Int)
 
 
 }

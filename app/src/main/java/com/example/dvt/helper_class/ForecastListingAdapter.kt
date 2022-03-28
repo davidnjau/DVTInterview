@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.dvt.R
@@ -21,6 +22,7 @@ class ForecastListingAdapter(
 
         val tvDay : TextView = itemView.findViewById(R.id.tvDay)
         val tvTemp : TextView = itemView.findViewById(R.id.tvTemp)
+        val tvImage : ImageView = itemView.findViewById(R.id.tvImage)
 
         init {
 
@@ -55,11 +57,29 @@ class ForecastListingAdapter(
         val date = weatherForecastInfoList[position].date
         val time = weatherForecastInfoList[position].time
         val temp = weatherForecastInfoList[position].temp
+        val weather = weatherForecastInfoList[position].weather
 
-        //Get Days
+        when (weather) {
+            "Rain" -> {
+                holder.tvImage.setBackgroundResource(R.drawable.rain2)
+            }
+            "Clouds" -> {
+                holder.tvImage.setBackgroundResource(R.drawable.partlysunny1)
+            }
+            "Clear" -> {
+                holder.tvImage.setBackgroundResource(R.drawable.clear1)
+            }
+            "Sunny" -> {
+                holder.tvImage.setBackgroundResource(R.drawable.clear2)
+
+            }
+            else -> {
+                holder.tvImage.setBackgroundResource(R.drawable.clear)
+            }
+        }
+        //Snow, Fog, Mist, Drizzle
 
         val dayOfWeek = formatterHelper.getDays(date)
-        Log.e("----- " , dayOfWeek)
 
         holder.tvDay.text = "$dayOfWeek $time"
         holder.tvTemp.text = temp.toString()

@@ -93,7 +93,13 @@ class FormatterHelper {
 
     fun convertToCelsius(kelvin: Double):Double{
 
-        val celsius = DecimalFormat("#.##").format(kelvin - 274.15);
+        val celsius = DecimalFormat("#.#").format(kelvin - 274.15);
+        return celsius.toDouble()
+
+    }
+    fun convertDp(geo: Double):Double{
+
+        val celsius = DecimalFormat("#.####").format(geo);
         return celsius.toDouble()
 
     }

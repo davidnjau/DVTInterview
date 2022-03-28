@@ -21,7 +21,6 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
     private fun getTodayResponseData(responseBody: TodayWeatherData): TodayWeatherInfo {
 
-        val formatterHelper = FormatterHelper()
 
         val todayDateTime = formatterHelper.getTodayDateTime()
         val todayDate = formatterHelper.getDate(todayDateTime)
@@ -60,6 +59,9 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
         val deg = wind.deg
 
 
+        var weather = ""
+        var weatherDescription = ""
+
         val weatherList = responseBody.weather
         for (weatherItem in weatherList) {
 
@@ -68,6 +70,8 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
             val description = weatherItem.description
             val icon = weatherItem.icon
 
+            weather = weatherMain
+            weatherDescription = description
         }
 
         val sunriseDate = formatterHelper.getDateFromMilli(sunrise * 1000)
@@ -81,7 +85,8 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
             lat, lon, name, todayDate, todayTime,
             formatterHelper.convertToCelsius(temp), formatterHelper.convertToCelsius(feels_like),
             formatterHelper.convertToCelsius(temp_min), formatterHelper.convertToCelsius(temp_max),
-            pressure, humidity, visibility, speed, deg, sunriseDateTime, sunsetDateTime
+            pressure, humidity, visibility, speed, deg, sunriseDateTime, sunsetDateTime,
+            weather,weatherDescription
         )
 
 
@@ -141,12 +146,14 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
                 val speed = item.wind_speed
                 val deg = item.wind_degrees
+                val weather = item.weather
+                val weatherDesc = item.weatherDescription
 
                 val forecastInfo = WeatherForecastInfo(
                     temp, feels_like, temp_min, temp_max,
 
                     pressure, humidity,
-                    visibility,speed,deg,date, time)
+                    visibility,speed,deg,date, time,weather, weatherDesc)
 
                 val isForecast = weatherDao.checkForecastData(date, time)
                 Log.e("---- ", isForecast.toString())
@@ -194,6 +201,9 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
             val deg = wind.deg
 
 
+            var weather = ""
+            var weatherDescription = ""
+
             val weatherList  = item.weather
             for (weatherItem in weatherList){
 
@@ -202,6 +212,8 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
                 val description = weatherItem.description
                 val icon = weatherItem.icon
 
+                weather = weatherMain
+                weatherDescription = description
             }
 
             val date = formatterHelper.getDate(dt_txt)
@@ -211,7 +223,7 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
                 formatterHelper.convertToCelsius(temp), formatterHelper.convertToCelsius(feels_like),
                 formatterHelper.convertToCelsius(temp_min), formatterHelper.convertToCelsius(temp_max),
                 pressure, humidity,
-                visibility,speed, deg, date, time)
+                visibility,speed, deg, date, time, weather, weatherDescription)
 
             forecastList.add(weatherForecastInfo)
 
@@ -225,14 +237,11 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
     suspend fun getTodayWeather():TodayWeatherInfo?{
 
         val todayWeatherInfoNo = weatherDao.getTodayWeather().size
-        return if (todayWeatherInfoNo > 1) {
+        return if (todayWeatherInfoNo >= 1) {
             weatherDao.getTodayWeather()[0]
         }else{
             null
         }
-
-
-
 
     }
     suspend fun getForecastWeatherList():List<WeatherForecastInfo>{
@@ -242,5 +251,106 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
 
     }
+
+    suspend fun addFavWeather(context: Context){
+
+        val latitudeKey = context.getString(R.string.latitude)
+        val longitudeKey = context.getString(R.string.longitude)
+
+        val lat = formatterHelper.retrieveSharedPreference(context, latitudeKey)
+        val lon = formatterHelper.retrieveSharedPreference(context, longitudeKey)
+
+        if (lat != null && lon != null){
+
+            val latitude = formatterHelper.convertDp(lat.toDouble())
+            val longitude = formatterHelper.convertDp(lon.toDouble())
+
+            val favouriteLocationInfo = weatherDao.getFavLocations(latitude, longitude)
+            if (favouriteLocationInfo == null){
+
+                val todayWeatherInfo = getTodayWeather()
+                if (todayWeatherInfo != null){
+
+                    val tempMin = todayWeatherInfo.temp_min
+                    val tempMax = todayWeatherInfo.temp_max
+                    val tempCurrent = todayWeatherInfo.temp
+                    val feelsLike = todayWeatherInfo.feels_like
+                    val weather = todayWeatherInfo.weather
+                    val weatherDesc = todayWeatherInfo.weatherDescription
+
+                    val sunrise = todayWeatherInfo.sunrise
+                    val sunset = todayWeatherInfo.sunset
+
+                    val pressure = todayWeatherInfo.pressure
+                    val humidity = todayWeatherInfo.humidity
+                    val visibility = todayWeatherInfo.visibility
+
+                    val speed = todayWeatherInfo.wind_speed
+                    val degrees = todayWeatherInfo.wind_degrees
+
+                    val name = todayWeatherInfo.name
+
+                    val date = todayWeatherInfo.date
+                    val time = todayWeatherInfo.time
+
+                    val todayDateTime = formatterHelper.getTodayDateTime()
+
+
+                    val addFavouriteLocationInfo = FavouriteLocationInfo(
+                        latitude, longitude, name, date, time,
+                        tempCurrent, feelsLike, tempMin, tempMax,
+                        pressure, humidity, visibility,
+                        speed, degrees,
+                        sunrise, sunset,
+                        weather, weatherDesc, todayDateTime)
+
+                    //Does not exist, add
+                    weatherDao.addFavWeather(addFavouriteLocationInfo)
+
+                    //Make fav icon fill
+
+                }
+
+            }else{
+
+                val id = favouriteLocationInfo.id.toString().toInt()
+                weatherDao.deleteFavData(id)
+
+            }
+
+
+
+        }
+
+
+
+
+    }
+
+    suspend fun checkFavWeather(context: Context):Boolean{
+
+        val latitudeKey = context.getString(R.string.latitude)
+        val longitudeKey = context.getString(R.string.longitude)
+
+        val lat = formatterHelper.retrieveSharedPreference(context, latitudeKey)
+        val lon = formatterHelper.retrieveSharedPreference(context, longitudeKey)
+
+        if (lat != null && lon != null) {
+
+            val latitude = formatterHelper.convertDp(lat.toDouble())
+            val longitude = formatterHelper.convertDp(lon.toDouble())
+
+            val favouriteLocationInfo = weatherDao.getFavLocations(latitude, longitude)
+            if (favouriteLocationInfo != null) {
+                //It exists
+                return true
+            }
+
+        }
+        return false
+
+    }
+
+
 
 }

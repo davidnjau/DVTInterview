@@ -25,8 +25,13 @@ data class TodayWeatherInfo(
         val wind_degrees: Double,
 
         val sunrise: String,
-        val sunset:String
-){
+        val sunset:String,
+
+        val weather: String,
+        val weatherDescription: String,
+
+
+        ){
         @PrimaryKey(autoGenerate = true)
         var id: Int? = null
 }
@@ -49,7 +54,45 @@ data class WeatherForecastInfo(
         val date: String,
         val time: String,
 
-){
+        val weather: String,
+        val weatherDescription: String,
+
+
+        ){
+        @PrimaryKey(autoGenerate = true)
+        var id: Int? = null
+}
+
+@Entity(tableName = "fav_location_info")
+data class FavouriteLocationInfo(
+
+        val lat: Double,
+        val lon: Double,
+        val name: String,
+        val date: String,
+        val time: String,
+
+        val temp: Double,
+        val feels_like: Double,
+        val temp_min: Double,
+        val temp_max: Double,
+
+        val pressure: Double,
+        val humidity: Double,
+        val visibility: Double,
+
+        val wind_speed: Double,
+        val wind_degrees: Double,
+
+        val sunrise: String,
+        val sunset:String,
+
+        val weather: String,
+        val weatherDescription: String,
+
+        val updatedOn:String
+
+        ){
         @PrimaryKey(autoGenerate = true)
         var id: Int? = null
 }
