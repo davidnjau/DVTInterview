@@ -8,8 +8,6 @@ import java.util.*
 
 class FormatterHelper {
 
-
-
     fun getDate(dateTime:String): String{
         val dateFormat: DateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
         val date1 = dateFormat.parse(dateTime.substring(0, 18))
@@ -41,7 +39,8 @@ class FormatterHelper {
 
     fun saveSharedPreference(
         context: Context,
-        sharedKey: String, sharedValue: String){
+        sharedKey: String,
+        sharedValue: String){
 
         val app_name = context.getString(R.string.app_name)
         val sharedPreferences = context.getSharedPreferences(app_name, Context.MODE_PRIVATE)

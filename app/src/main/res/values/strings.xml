@@ -4,6 +4,8 @@
     <string name="latitude">latitude</string>
     <string name="longitude">longitude</string>
 
+    <string name="api_key">2567e372cd849bf839c9fe854da69a5c</string>
+
 
 
 </resources>

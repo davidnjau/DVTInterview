@@ -30,3 +30,26 @@ data class TodayWeatherInfo(
         @PrimaryKey(autoGenerate = true)
         var id: Int? = null
 }
+
+@Entity(tableName = "weather_forecast_data")
+data class WeatherForecastInfo(
+
+        val temp: Double,
+        val feels_like: Double,
+        val temp_min: Double,
+        val temp_max: Double,
+
+        val pressure: Double,
+        val humidity: Double,
+        val visibility: Double,
+
+        val wind_speed: Double,
+        val wind_degrees: Double,
+
+        val date: String,
+        val time: String,
+
+){
+        @PrimaryKey(autoGenerate = true)
+        var id: Int? = null
+}

@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [TodayWeatherInfo::class],
+    entities = [TodayWeatherInfo::class, WeatherForecastInfo::class],
     version = 1,
     exportSchema = true)
 

@@ -1,49 +1,51 @@
 package com.example.dvt.activities
 
-import android.Manifest
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.LocationManager
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.Observer
 import com.example.dvt.R
-import com.example.dvt.helper_class.*
+import com.example.dvt.helper_class.FormatterHelper
+import com.example.dvt.helper_class.LocationFinderGPSNLP
+import com.example.dvt.helper_class.TodayWeatherData
+import com.example.dvt.helper_class.WeatherForecast
 import com.example.dvt.retrofit.WeatherDataViewModel
 import com.example.dvt.roomdatabase.RoomViewModel
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 
 class MainActivity : AppCompatActivity() {
 
-    private val REQUEST_LOCATION = 1
-    var locationManager: LocationManager? = null
 
     private val weatherDataViewModel: WeatherDataViewModel by viewModels()
     private val formatterHelper = FormatterHelper()
     private lateinit var roomViewModel: RoomViewModel
-    var latitude = ""
-    var longitude = ""
+
+    private lateinit var bottom_Nav_navigation: BottomNavigationView
+    private var finder: LocationFinderGPSNLP? = null
+
+    private var longitude = 0.000
+    private var latitude = 0.000
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        finder = LocationFinderGPSNLP(this)
+
+        bottom_Nav_navigation = findViewById(R.id.bottom_Nav_navigation)
+
+        bottom_Nav_navigation.setOnNavigationItemSelectedListener(navigationItemSelectedListener)
+
+
         roomViewModel = RoomViewModel(this.application)
 
-        ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_LOCATION)
-
         //Get Livedata for the forecast
-        val weatherForecastObserver= Observer<WeatherForecast> { weatherForecast->
+        val weatherForecastObserver= Observer<WeatherForecast> { responseBody ->
             //set data in UI
-            Log.e("----- " , weatherForecast.toString())
-
+            roomViewModel.addForecastData(this, responseBody)
         }
         weatherDataViewModel.getWeatherForecast().observe(this,weatherForecastObserver)
 
@@ -52,70 +54,62 @@ class MainActivity : AppCompatActivity() {
         val todayWeatherObserver= Observer<TodayWeatherData> { responseBody->
             //set data in UI
             roomViewModel.addTodayWeather(this, responseBody)
-
         }
         weatherDataViewModel.getTodayWeather().observe(this,todayWeatherObserver)
 
     }
 
+    private var navigationItemSelectedListener =
+        BottomNavigationView.OnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigation_location -> {
+//                    openDrawer()
+                    getCurrentLocation()
+
+                }
+                R.id.navigation_home -> {
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    return@OnNavigationItemSelectedListener true
+                }
+
+                R.id.navigation_profile -> {
+//                    val intent = Intent(this, Profile::class.java)
+//                    startActivity(intent)
+                    return@OnNavigationItemSelectedListener true
+                }
+            }
+            false
+        }
+
     override fun onStart() {
         super.onStart()
 
-        getCurrentUserLocation()
-    }
-
-    private fun getCurrentUserLocation() {
-
-        locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager?
-        if (!locationManager!!.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            onGPS()
-        } else {
-            getLocation()
-        }
+        getCurrentLocation()
 
     }
 
-    private fun onGPS() {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setMessage("Enable GPS").setCancelable(false).setPositiveButton("Yes") {
-                _, _ -> startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
-        }.setNegativeButton("No") {
-                dialog, _ -> dialog.cancel()
-        }
-        val alertDialog: AlertDialog = builder.create()
-        alertDialog.show()
-    }
+    private fun getCurrentLocation(): Boolean {
+        var isLocation = false
+        if (finder!!.canGetLocation()) {
+            latitude = finder!!.latitude
+            longitude = finder!!.longitude
+            if (latitude != 0.000 && longitude != 0.000) {
+                isLocation = true
 
-    private fun getLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this@MainActivity, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this@MainActivity, Manifest.permission.ACCESS_COARSE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                REQUEST_LOCATION)
-        } else {
-            val locationGPS = locationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if (locationGPS != null) {
-                val lat: Double = locationGPS.latitude
-                val longi: Double = locationGPS.longitude
-
-                latitude = lat.toString()
-                longitude = longi.toString()
-
+                //Add these to the shared preference
                 val latitudeKey = getString(R.string.latitude)
                 val longitudeKey = getString(R.string.longitude)
 
-                formatterHelper.saveSharedPreference(this , latitudeKey, latitude)
-                formatterHelper.saveSharedPreference(this, longitudeKey, longitude)
+                val lat = latitude.toString()
+                val lon = longitude.toString()
 
-            } else {
-                Toast.makeText(this, "Unable to find location.", Toast.LENGTH_SHORT).show()
+                formatterHelper.saveSharedPreference(this, latitudeKey, lat)
+                formatterHelper.saveSharedPreference(this, longitudeKey, lon)
+
             }
         }
+        return isLocation
     }
 
 }

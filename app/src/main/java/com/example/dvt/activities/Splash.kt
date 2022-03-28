@@ -12,13 +12,9 @@ import com.example.dvt.roomdatabase.RoomViewModel
 @Suppress("DEPRECATION")
 class Splash : AppCompatActivity() {
 
-    private lateinit var roomViewModel: RoomViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
-
-        roomViewModel = RoomViewModel(this.application)
 
         window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
         //This method is used so that your splash activity

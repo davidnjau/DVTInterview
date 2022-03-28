@@ -1,10 +1,12 @@
 package com.example.dvt.roomdatabase
 
 import android.content.Context
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.example.dvt.R
 import com.example.dvt.helper_class.FormatterHelper
 import com.example.dvt.helper_class.TodayWeatherData
+import com.example.dvt.helper_class.WeatherForecast
 
 class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
@@ -13,16 +15,11 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
     // Room executes all queries on a separate thread.
     // Observed LiveData will notify the observer when the data has changed.
 
-
-//    fun getTodayWeather(taskId: String): TodayWeatherInfo = runBlocking{
-//        weatherDao.getTodayWeather("", 9.9, 8.8)
-//    }
-
-    private fun checkDateLatLon(date: String, lat: Double, lon: Double):Boolean{
+    private fun checkTodayDateLatLon(date: String, lat: Double, lon: Double):Boolean{
         return weatherDao.checkTodayData(date, lat, lon)
     }
 
-    private fun getResponseData(responseBody: TodayWeatherData): TodayWeatherInfo {
+    private fun getTodayResponseData(responseBody: TodayWeatherData): TodayWeatherInfo {
 
         val todayDateTime = formatterHelper.getTodayDateTime()
         val todayDate = formatterHelper.getDate(todayDateTime)
@@ -100,20 +97,116 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
             val todayDateTime = formatterHelper.getTodayDateTime()
             val todayDate = formatterHelper.getDate(todayDateTime)
 
-            val todayWeatherInfo = getResponseData(todayWeatherData)
+            val todayWeatherInfo = getTodayResponseData(todayWeatherData)
 
             //Check if date exists with lat and lon
-            val isSaved = checkDateLatLon(todayDate, latitude.toDouble(), longitude.toDouble())
+            val isSaved = checkTodayDateLatLon(todayDate, latitude.toDouble(), longitude.toDouble())
             if (!isSaved){
                 //Does not exist so save it
                 weatherDao.addTodayWeather(todayWeatherInfo)
             }
         }
 
+        Log.e("---- " , latitude.toString())
+
+    }
 
 
+    private fun checkForecastLatLon(date: String, time:String): Boolean{
+        return weatherDao.checkForecastData(date, time)
+    }
 
+    suspend fun addForecastData(context: Context, weatherForecast: WeatherForecast){
+
+        val forecastList = getForecastData(weatherForecast)
+        for(item in forecastList){
+
+            val date = item.date
+            val time = item.time
+
+            val isForecast = checkForecastLatLon(date, time)
+            if(!isForecast){
+
+                val visibility  = item.visibility
+
+                val temp = item.temp
+                val feels_like = item.feels_like
+                val temp_min = item.temp_min
+                val temp_max = item.temp_max
+                val pressure = item.pressure
+                val humidity = item.humidity
+
+                val speed = item.wind_speed
+                val deg = item.wind_degrees
+
+                val forecastInfo = WeatherForecastInfo(
+                    temp, feels_like, temp_min, temp_max, pressure, humidity,
+                    visibility,speed,deg,date, time)
+
+                weatherDao.addForecastWeather(forecastInfo)
+
+            }
+
+        }
 
 
     }
+
+    private fun getForecastData(responseBody: WeatherForecast):List<WeatherForecastInfo>{
+
+        val forecastList = ArrayList<WeatherForecastInfo>()
+
+        val cod = responseBody.cod
+        val cnt = responseBody.cnt
+        val list = responseBody.list
+        for (item in list){
+
+            //Use this as the id
+            val dt_txt  = item.dt_txt
+
+            val dt  = item.dt
+            val visibility  = item.visibility
+
+            val main  = item.main
+            val temp = main.temp
+            val feels_like = main.feels_like
+            val temp_min = main.temp_min
+            val temp_max = main.temp_max
+            val pressure = main.pressure
+            val humidity = main.humidity
+
+            val clouds  = item.clouds
+            val all = clouds.all
+
+            val wind  = item.wind
+            val speed = wind.speed
+            val deg = wind.deg
+
+
+            val weatherList  = item.weather
+            for (weatherItem in weatherList){
+
+                val id = weatherItem.id
+                val weatherMain = weatherItem.main
+                val description = weatherItem.description
+                val icon = weatherItem.icon
+
+            }
+
+            val date = formatterHelper.getDate(dt_txt)
+            val time = formatterHelper.getTime(dt_txt)
+
+            val weatherForecastInfo = WeatherForecastInfo(
+                temp, feels_like, temp_min, temp_max, pressure, humidity,
+                visibility,speed, deg, date, time)
+
+            forecastList.add(weatherForecastInfo)
+
+        }
+
+        return forecastList
+
+
+    }
+
 }

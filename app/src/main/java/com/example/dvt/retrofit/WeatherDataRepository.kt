@@ -21,78 +21,46 @@ class WeatherDataRepository() {
         //Get the weather Forecast for the next few days
         fun getWeatherForecast(): MutableLiveData<WeatherForecast> {
 
+            val context = Application().applicationContext
+            val formatterHelper = FormatterHelper()
+
             val weatherForecastLiveData: MutableLiveData<WeatherForecast> = MutableLiveData<WeatherForecast>()
 
             CoroutineScope(Dispatchers.Default).launch {
 
                 launch(Dispatchers.IO) {
 
-                    val apiInterface = ApiInterface.create()
-                    var response = apiInterface.getWeatherForecast(-1.2240538, 36.6810324, "2567e372cd849bf839c9fe854da69a5c").execute()
-                    
-                    withContext(Dispatchers.Default) {
-                        response.let {
-                            
-                            if (response.isSuccessful) {
+                    val latitudeKey = context.getString(R.string.latitude)
+                    val longitudeKey = context.getString(R.string.longitude)
+                    val apiDataKey = context.getString(R.string.api_key)
 
-                                val responseBody = response.body()
+                    val latitude = formatterHelper.retrieveSharedPreference(context, latitudeKey)
+                    val longitude = formatterHelper.retrieveSharedPreference(context, longitudeKey)
+                    val apiKey = formatterHelper.retrieveSharedPreference(context, apiDataKey)
 
-                                if (responseBody != null){
+                    if (latitude != null && longitude != null && apiKey != null){
 
-                                    val cod = responseBody.cod
-                                    val cnt = responseBody.cnt
-                                    val list = responseBody.list
-                                    for (item in list){
+                        val apiInterface = ApiInterface.create()
+                        var response = apiInterface.getWeatherForecast(
+                            latitude.toDouble(),
+                            longitude.toDouble(),
+                            apiKey).execute()
 
-                                        val dt  = item.dt
-                                        val visibility  = item.visibility
-                                        val dt_txt  = item.dt_txt
+                        withContext(Dispatchers.Default) {
+                            response.let {
 
-                                        val main  = item.main
-                                        val temp = main.temp
-                                        val feels_like = main.feels_like
-                                        val temp_min = main.temp_min
-                                        val temp_max = main.temp_max
-                                        val pressure = main.pressure
-                                        val humidity = main.humidity
+                                if (response.isSuccessful) {
 
-                                        val clouds  = item.clouds
-                                        val all = clouds.all
-
-                                        val wind  = item.wind
-                                        val speed = wind.speed
-                                        val deg = wind.deg
-
-
-                                        val weatherList  = item.weather
-                                        for (weatherItem in weatherList){
-
-                                            val id = weatherItem.id
-                                            val weatherMain = weatherItem.main
-                                            val description = weatherItem.description
-                                            val icon = weatherItem.icon
-
-                                        }
-
-
-
-
-
-                                    }
-
-
-                                    //Save data to Room database
-
-
-//                                weatherForecastLiveData.postValue(response.body() )
+                                    weatherForecastLiveData.postValue(response.body() )
 
                                 }
 
-
                             }
-
                         }
+
                     }
+
+
                 }
 
             }
@@ -113,16 +81,19 @@ class WeatherDataRepository() {
 
                     val latitudeKey = context.getString(R.string.latitude)
                     val longitudeKey = context.getString(R.string.longitude)
+                    val apiDataKey = context.getString(R.string.api_key)
 
                     val latitude = formatterHelper.retrieveSharedPreference(context, latitudeKey)
                     val longitude = formatterHelper.retrieveSharedPreference(context, longitudeKey)
+                    val apiKey = formatterHelper.retrieveSharedPreference(context, apiDataKey)
 
-                    if (latitude != null && longitude != null){
+                    if (latitude != null && longitude != null && apiKey != null){
 
                         val apiInterface = ApiInterface.create()
-                        var response = apiInterface.getTodayWeather(latitude.toDouble(),
+                        var response = apiInterface.getTodayWeather(
+                            latitude.toDouble(),
                             longitude.toDouble(),
-                            "2567e372cd849bf839c9fe854da69a5c").execute()
+                            apiKey).execute()
 
                         withContext(Dispatchers.Default) {
                             response.let {
