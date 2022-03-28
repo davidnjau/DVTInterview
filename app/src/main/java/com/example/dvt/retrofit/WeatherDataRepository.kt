@@ -2,6 +2,7 @@ package com.example.dvt.retrofit
 
 import android.app.Application
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.dvt.R
 import com.example.dvt.helper_class.FormatterHelper
@@ -19,9 +20,9 @@ class WeatherDataRepository() {
     companion object {
 
         //Get the weather Forecast for the next few days
-        fun getWeatherForecast(): MutableLiveData<WeatherForecast> {
+        fun getWeatherForecast(application: Application): MutableLiveData<WeatherForecast> {
 
-            val context = Application().applicationContext
+            val context = application.applicationContext
             val formatterHelper = FormatterHelper()
 
             val weatherForecastLiveData: MutableLiveData<WeatherForecast> = MutableLiveData<WeatherForecast>()
@@ -36,15 +37,14 @@ class WeatherDataRepository() {
 
                     val latitude = formatterHelper.retrieveSharedPreference(context, latitudeKey)
                     val longitude = formatterHelper.retrieveSharedPreference(context, longitudeKey)
-                    val apiKey = formatterHelper.retrieveSharedPreference(context, apiDataKey)
 
-                    if (latitude != null && longitude != null && apiKey != null){
+                    if (latitude != null && longitude != null){
 
                         val apiInterface = ApiInterface.create()
                         var response = apiInterface.getWeatherForecast(
                             latitude.toDouble(),
                             longitude.toDouble(),
-                            apiKey).execute()
+                            apiDataKey).execute()
 
                         withContext(Dispatchers.Default) {
                             response.let {
@@ -58,6 +58,8 @@ class WeatherDataRepository() {
                             }
                         }
 
+                    }else{
+                        formatterHelper.getCurrentLocation(context)
                     }
 
 
@@ -68,9 +70,9 @@ class WeatherDataRepository() {
         }
 
         //Get today's weather data
-        fun getTodayWeather(): MutableLiveData<TodayWeatherData> {
+        fun getTodayWeather(application: Application): MutableLiveData<TodayWeatherData> {
 
-            val context = Application().applicationContext
+            val context = application.applicationContext
             val formatterHelper = FormatterHelper()
 
             val todayWeatherLiveData: MutableLiveData<TodayWeatherData> = MutableLiveData<TodayWeatherData>()
@@ -85,26 +87,28 @@ class WeatherDataRepository() {
 
                     val latitude = formatterHelper.retrieveSharedPreference(context, latitudeKey)
                     val longitude = formatterHelper.retrieveSharedPreference(context, longitudeKey)
-                    val apiKey = formatterHelper.retrieveSharedPreference(context, apiDataKey)
 
-                    if (latitude != null && longitude != null && apiKey != null){
+                    if (latitude != null && longitude != null){
 
                         val apiInterface = ApiInterface.create()
                         var response = apiInterface.getTodayWeather(
                             latitude.toDouble(),
                             longitude.toDouble(),
-                            apiKey).execute()
+                            apiDataKey).execute()
 
                         withContext(Dispatchers.Default) {
                             response.let {
 
                                 if (response.isSuccessful) {
+
                                     todayWeatherLiveData.postValue(response.body() )
                                 }
 
                             }
                         }
 
+                    }else{
+                        formatterHelper.getCurrentLocation(context)
                     }
 
 

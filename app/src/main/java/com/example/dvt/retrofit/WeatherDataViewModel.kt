@@ -1,14 +1,14 @@
 package com.example.dvt.retrofit
 
 import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.example.dvt.helper_class.TodayWeatherData
 import com.example.dvt.helper_class.WeatherForecast
-import java.util.ArrayList
 
-class WeatherDataViewModel: ViewModel() {
+class WeatherDataViewModel (application: Application) : AndroidViewModel(application) {
 
 
 
@@ -18,14 +18,13 @@ class WeatherDataViewModel: ViewModel() {
     fun getWeatherForecast(): LiveData<WeatherForecast> { return forecastLiveData }
     fun getTodayWeather(): LiveData<TodayWeatherData> { return todayLiveData }
 
-
-
     init {
 
         try {
-            forecastLiveData= WeatherDataRepository.getWeatherForecast()
-            todayLiveData= WeatherDataRepository.getTodayWeather()
+            forecastLiveData= WeatherDataRepository.getWeatherForecast(getApplication<Application>())
+            todayLiveData= WeatherDataRepository.getTodayWeather(getApplication<Application>())
         }catch (e: Exception) {
+            Log.e("------",e.toString())
             print(e)
         }
 

@@ -3,6 +3,7 @@ package com.example.dvt.helper_class
 import android.content.Context
 import com.example.dvt.R
 import java.text.DateFormat
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -60,8 +61,49 @@ class FormatterHelper {
 
     }
 
+    fun getCurrentLocation(context: Context): Boolean {
+
+        var longitude = 0.000
+        var latitude = 0.000
+
+        val finder = LocationFinderGPSNLP(context)
 
 
+        var isLocation = false
+        if (finder.canGetLocation()) {
+            latitude = finder.latitude
+            longitude = finder.longitude
+            if (latitude != 0.000 && longitude != 0.000) {
+                isLocation = true
+
+                //Add these to the shared preference
+                val latitudeKey = context.getString(R.string.latitude)
+                val longitudeKey = context.getString(R.string.longitude)
+
+                val lat = latitude.toString()
+                val lon = longitude.toString()
+
+                saveSharedPreference(context, latitudeKey, lat)
+                saveSharedPreference(context, longitudeKey, lon)
+
+            }
+        }
+        return isLocation
+    }
+
+    fun convertToCelsius(kelvin: Double):Double{
+
+        val celsius = DecimalFormat("#.##").format(kelvin - 274.15);
+        return celsius.toDouble()
+
+    }
+
+    fun getDays(myDate: String): String {
+
+        val sdf = SimpleDateFormat("yyyy-MM-dd")
+        val date = sdf.parse(myDate)
+        return SimpleDateFormat("EEEE", Locale.ENGLISH).format(date.time)
+    }
 
 
 }

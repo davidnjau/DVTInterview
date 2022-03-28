@@ -8,6 +8,7 @@ import com.example.dvt.helper_class.WeatherForecast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 
 class RoomViewModel(application: Application) : AndroidViewModel(application) {
@@ -33,5 +34,15 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun getTodayWeather()= runBlocking {
+
+        repository.getTodayWeather()
+
+    }
+    fun getForecastWeatherList()= runBlocking {
+
+        repository.getForecastWeatherList()
+
+    }
 
 }

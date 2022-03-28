@@ -2,11 +2,11 @@ package com.example.dvt.roomdatabase
 
 import android.content.Context
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import com.example.dvt.R
 import com.example.dvt.helper_class.FormatterHelper
 import com.example.dvt.helper_class.TodayWeatherData
 import com.example.dvt.helper_class.WeatherForecast
+import java.util.*
 
 class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
@@ -20,6 +20,8 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
     }
 
     private fun getTodayResponseData(responseBody: TodayWeatherData): TodayWeatherInfo {
+
+        val formatterHelper = FormatterHelper()
 
         val todayDateTime = formatterHelper.getTodayDateTime()
         val todayDate = formatterHelper.getDate(todayDateTime)
@@ -68,17 +70,18 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
         }
 
-        val sunriseDate = formatterHelper.getDateFromMilli(sunrise)
-        val sunsetTime = formatterHelper.getDateFromMilli(sunset)
+        val sunriseDate = formatterHelper.getDateFromMilli(sunrise * 1000)
+        val sunsetTime = formatterHelper.getDateFromMilli(sunset * 1000)
 
         val sunriseDateTime = formatterHelper.getDateTime(sunriseDate)
         val sunsetDateTime = formatterHelper.getDateTime(sunsetTime)
 
 
         return TodayWeatherInfo(
-            lat, lon, name, todayDate,
-            todayTime, temp, feels_like, temp_min, temp_max, pressure,
-            humidity, visibility, speed, deg, sunriseDateTime, sunsetDateTime
+            lat, lon, name, todayDate, todayTime,
+            formatterHelper.convertToCelsius(temp), formatterHelper.convertToCelsius(feels_like),
+            formatterHelper.convertToCelsius(temp_min), formatterHelper.convertToCelsius(temp_max),
+            pressure, humidity, visibility, speed, deg, sunriseDateTime, sunsetDateTime
         )
 
 
@@ -101,13 +104,13 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
             //Check if date exists with lat and lon
             val isSaved = checkTodayDateLatLon(todayDate, latitude.toDouble(), longitude.toDouble())
+
+            weatherDao.deleteTodayData()
             if (!isSaved){
                 //Does not exist so save it
                 weatherDao.addTodayWeather(todayWeatherInfo)
             }
         }
-
-        Log.e("---- " , latitude.toString())
 
     }
 
@@ -140,10 +143,18 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
                 val deg = item.wind_degrees
 
                 val forecastInfo = WeatherForecastInfo(
-                    temp, feels_like, temp_min, temp_max, pressure, humidity,
+                    temp, feels_like, temp_min, temp_max,
+
+                    pressure, humidity,
                     visibility,speed,deg,date, time)
 
-                weatherDao.addForecastWeather(forecastInfo)
+                val isForecast = weatherDao.checkForecastData(date, time)
+                Log.e("---- ", isForecast.toString())
+                if (!isForecast) {
+                    weatherDao.addForecastWeather(forecastInfo)
+
+                }
+
 
             }
 
@@ -197,7 +208,9 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
             val time = formatterHelper.getTime(dt_txt)
 
             val weatherForecastInfo = WeatherForecastInfo(
-                temp, feels_like, temp_min, temp_max, pressure, humidity,
+                formatterHelper.convertToCelsius(temp), formatterHelper.convertToCelsius(feels_like),
+                formatterHelper.convertToCelsius(temp_min), formatterHelper.convertToCelsius(temp_max),
+                pressure, humidity,
                 visibility,speed, deg, date, time)
 
             forecastList.add(weatherForecastInfo)
@@ -205,6 +218,27 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
         }
 
         return forecastList
+
+
+    }
+
+    suspend fun getTodayWeather():TodayWeatherInfo?{
+
+        val todayWeatherInfoNo = weatherDao.getTodayWeather().size
+        return if (todayWeatherInfoNo > 1) {
+            weatherDao.getTodayWeather()[0]
+        }else{
+            null
+        }
+
+
+
+
+    }
+    suspend fun getForecastWeatherList():List<WeatherForecastInfo>{
+
+        val forecastInfoList = weatherDao.getForecastWeather()
+        return forecastInfoList
 
 
     }

@@ -2,18 +2,25 @@ package com.example.dvt.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.RelativeSizeSpan
+import android.text.style.SuperscriptSpan
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.dvt.R
-import com.example.dvt.helper_class.FormatterHelper
-import com.example.dvt.helper_class.LocationFinderGPSNLP
-import com.example.dvt.helper_class.TodayWeatherData
-import com.example.dvt.helper_class.WeatherForecast
+import com.example.dvt.helper_class.*
 import com.example.dvt.retrofit.WeatherDataViewModel
 import com.example.dvt.roomdatabase.RoomViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class MainActivity : AppCompatActivity() {
@@ -26,12 +33,34 @@ class MainActivity : AppCompatActivity() {
     private lateinit var bottom_Nav_navigation: BottomNavigationView
     private var finder: LocationFinderGPSNLP? = null
 
-    private var longitude = 0.000
-    private var latitude = 0.000
+    private lateinit var tvTemp: TextView
+    private lateinit var tvLocation: TextView
+    private lateinit var tvTempMin: TextView
+    private lateinit var tvTempFeelsLike: TextView
+    private lateinit var tvTempMax: TextView
+    private var spannableStringBuilder: SpannableStringBuilder? = null
+
+    private lateinit var recyclerView : RecyclerView
+    private lateinit var layoutManager: RecyclerView.LayoutManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        tvTemp = findViewById(R.id.tvTemp)
+        tvLocation = findViewById(R.id.tvLocation)
+        tvTempMin = findViewById(R.id.tvTempMin)
+        tvTempFeelsLike = findViewById(R.id.tvTempFeelsLike)
+        tvTempMax = findViewById(R.id.tvTempMax)
+
+        recyclerView = findViewById(R.id.recyclerView)
+        layoutManager = LinearLayoutManager(
+            this,
+            LinearLayoutManager.VERTICAL,
+            false
+        )
+        recyclerView.layoutManager = layoutManager
+        recyclerView.setHasFixedSize(true)
 
         finder = LocationFinderGPSNLP(this)
 
@@ -39,13 +68,13 @@ class MainActivity : AppCompatActivity() {
 
         bottom_Nav_navigation.setOnNavigationItemSelectedListener(navigationItemSelectedListener)
 
-
         roomViewModel = RoomViewModel(this.application)
 
         //Get Livedata for the forecast
         val weatherForecastObserver= Observer<WeatherForecast> { responseBody ->
             //set data in UI
             roomViewModel.addForecastData(this, responseBody)
+            getTodayWeather()
         }
         weatherDataViewModel.getWeatherForecast().observe(this,weatherForecastObserver)
 
@@ -54,7 +83,9 @@ class MainActivity : AppCompatActivity() {
         val todayWeatherObserver= Observer<TodayWeatherData> { responseBody->
             //set data in UI
             roomViewModel.addTodayWeather(this, responseBody)
+            getTodayWeather()
         }
+
         weatherDataViewModel.getTodayWeather().observe(this,todayWeatherObserver)
 
     }
@@ -64,7 +95,7 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.navigation_location -> {
 //                    openDrawer()
-                    getCurrentLocation()
+                    formatterHelper.getCurrentLocation(this)
 
                 }
                 R.id.navigation_home -> {
@@ -85,31 +116,44 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        getCurrentLocation()
+        formatterHelper.getCurrentLocation(this)
 
+        getTodayWeather()
     }
 
-    private fun getCurrentLocation(): Boolean {
-        var isLocation = false
-        if (finder!!.canGetLocation()) {
-            latitude = finder!!.latitude
-            longitude = finder!!.longitude
-            if (latitude != 0.000 && longitude != 0.000) {
-                isLocation = true
+    private fun getTodayWeather(){
 
-                //Add these to the shared preference
-                val latitudeKey = getString(R.string.latitude)
-                val longitudeKey = getString(R.string.longitude)
+        val todayWeatherInfo = roomViewModel.getTodayWeather()
+        if (todayWeatherInfo != null) {
+            val tempMin = todayWeatherInfo.temp_min
+            val tempMax = todayWeatherInfo.temp_max
+            val tempCurrent = todayWeatherInfo.temp
+            val feelsLike = todayWeatherInfo.feels_like
 
-                val lat = latitude.toString()
-                val lon = longitude.toString()
+            val name = todayWeatherInfo.name
 
-                formatterHelper.saveSharedPreference(this, latitudeKey, lat)
-                formatterHelper.saveSharedPreference(this, longitudeKey, lon)
-
-            }
+            tvTemp.text = tempCurrent.toString()
+            tvLocation.text = name.toString()
+            tvTempMin.text = tempMin.toString()
+            tvTempFeelsLike.text = feelsLike.toString()
+            tvTempMax.text = tempMax.toString()
         }
-        return isLocation
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            val weatherForecastList = roomViewModel.getForecastWeatherList()
+
+            CoroutineScope(Dispatchers.Main).launch {
+                val patientsListingAdapter = ForecastListingAdapter(
+                    weatherForecastList,this@MainActivity)
+                recyclerView.adapter = patientsListingAdapter
+            }
+
+        }
+
     }
+
+
+
 
 }
