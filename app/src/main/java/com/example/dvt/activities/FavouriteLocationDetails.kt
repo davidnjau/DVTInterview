@@ -74,6 +74,7 @@ class FavouriteLocationDetails : AppCompatActivity() {
             tvUpdatedOn.text = favouriteLocationDetails.updatedOn
 
 
+
         }
 
 
