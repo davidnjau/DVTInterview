@@ -21,9 +21,10 @@ class WeatherDataRepository() {
 
         //Get the weather Forecast for the next few days
         fun getWeatherForecast(application: Application): MutableLiveData<WeatherForecast> {
-
+            Log.e("----- ", "2")
             val context = application.applicationContext
             val formatterHelper = FormatterHelper()
+            val roomViewModel = RoomViewModel(application)
 
             val weatherForecastLiveData: MutableLiveData<WeatherForecast> = MutableLiveData<WeatherForecast>()
 
@@ -37,6 +38,7 @@ class WeatherDataRepository() {
 
                     val latitude = formatterHelper.retrieveSharedPreference(context, latitudeKey)
                     val longitude = formatterHelper.retrieveSharedPreference(context, longitudeKey)
+                    Log.e("-----2 ", latitude.toString())
 
                     if (latitude != null && longitude != null){
 
@@ -52,14 +54,20 @@ class WeatherDataRepository() {
                                 if (response.isSuccessful) {
 
                                     weatherForecastLiveData.postValue(response.body() )
-
+                                    response.body()
+                                        ?.let { it1 -> roomViewModel.addForecastData(context, it1) }
                                 }
+
+                                Log.e("-----1 ", response.toString())
+
 
                             }
                         }
 
                     }else{
-                        formatterHelper.getCurrentLocation(context)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            formatterHelper.getCurrentLocation(context)
+                        }
                     }
 
 
@@ -71,10 +79,10 @@ class WeatherDataRepository() {
 
         //Get today's weather data
         fun getTodayWeather(application: Application): MutableLiveData<TodayWeatherData> {
-
+            Log.e("----- ", "3")
             val context = application.applicationContext
             val formatterHelper = FormatterHelper()
-
+            val roomViewModel = RoomViewModel(application)
             val todayWeatherLiveData: MutableLiveData<TodayWeatherData> = MutableLiveData<TodayWeatherData>()
 
             CoroutineScope(Dispatchers.Default).launch {
@@ -102,13 +110,18 @@ class WeatherDataRepository() {
                                 if (response.isSuccessful) {
 
                                     todayWeatherLiveData.postValue(response.body() )
+
+                                    response.body()
+                                        ?.let { it1 -> roomViewModel.addTodayWeather(context, it1) }
                                 }
 
                             }
                         }
 
                     }else{
-                        formatterHelper.getCurrentLocation(context)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            formatterHelper.getCurrentLocation(context)
+                        }
                     }
 
 

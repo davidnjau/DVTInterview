@@ -7,6 +7,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.dvt.helper_class.TodayWeatherData
 import com.example.dvt.helper_class.WeatherForecast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class WeatherDataViewModel (application: Application) : AndroidViewModel(application) {
 
@@ -30,6 +33,17 @@ class WeatherDataViewModel (application: Application) : AndroidViewModel(applica
 
     }
 
+    fun forceFetch(){
+
+        CoroutineScope(Dispatchers.IO).launch {
+
+            Log.e("----- ", "1")
+
+            WeatherDataRepository.getWeatherForecast(getApplication<Application>())
+            WeatherDataRepository.getTodayWeather(getApplication<Application>())
+        }
+
+    }
 
 
 }

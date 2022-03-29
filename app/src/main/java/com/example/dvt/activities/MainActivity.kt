@@ -1,7 +1,9 @@
 package com.example.dvt.activities
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -17,6 +19,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.dvt.R
 import com.example.dvt.helper_class.*
 import com.example.dvt.retrofit.WeatherDataViewModel
@@ -52,10 +55,38 @@ class MainActivity : AppCompatActivity() {
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private lateinit var mainBackground: ConstraintLayout
 
+    private lateinit var swipeToRefreshLayout: SwipeRefreshLayout
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        swipeToRefreshLayout = findViewById(R.id.swipeRefresh3)
+        swipeToRefreshLayout.setOnRefreshListener {
+            Handler().postDelayed({
+                swipeToRefreshLayout.isRefreshing = false
+
+                CoroutineScope(Dispatchers.Main).launch {
+                    formatterHelper.getCurrentLocation(this@MainActivity)
+                    delay(1000)
+                }
+
+                CoroutineScope(Dispatchers.IO).launch {
+                    weatherDataViewModel.forceFetch()
+                    delay(1000)
+                }
+
+                getTodayWeather()
+
+            }, 7000)
+        }
+        swipeToRefreshLayout.setColorSchemeResources(
+            R.color.sunny,
+            R.color.rainy,
+            R.color.cloudy,
+            R.color.sunny,
+        )
 
         tvTemp = findViewById(R.id.tvTemp)
         tvLocation = findViewById(R.id.tvLocation)
@@ -101,6 +132,7 @@ class MainActivity : AppCompatActivity() {
             getTodayWeather()
         }
 
+
         weatherDataViewModel.getTodayWeather().observe(this,todayWeatherObserver)
 
         imgBtnFav.setOnClickListener {
@@ -110,6 +142,8 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+
 
     private var navigationItemSelectedListener =
         BottomNavigationView.OnNavigationItemSelectedListener { item ->
@@ -148,7 +182,6 @@ class MainActivity : AppCompatActivity() {
         super.onStart()
 
         formatterHelper.getCurrentLocation(this)
-
         getTodayWeather()
     }
 
