@@ -39,6 +39,12 @@ interface WeatherDao {
     @Query("SELECT * from fav_location_info WHERE lat =:lat AND lon =:lon")
     suspend fun getFavLocations(lat:Double, lon:Double): FavouriteLocationInfo?
 
+    @Query("SELECT * from fav_location_info")
+    suspend fun getFavLocations(): List<FavouriteLocationInfo>
+
+    @Query("SELECT * from fav_location_info WHERE id = :id")
+    suspend fun getFavLocationsDetails(id: Int): FavouriteLocationInfo?
+
     @Query("DELETE FROM fav_location_info WHERE id = :id")
     suspend fun deleteFavData(id:Int)
 

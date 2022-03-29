@@ -10,9 +10,19 @@
         android:icon="@drawable/ic_action_home"
         android:title="Home" />
 
+<!--    <item-->
+<!--        android:id="@+id/navigation_profile"-->
+<!--        android:icon="@drawable/ic_action_setting"-->
+<!--        android:title="Setting" />-->
+
     <item
-        android:id="@+id/navigation_profile"
-        android:icon="@drawable/ic_action_setting"
-        android:title="Setting" />
+        android:id="@+id/navigation_fav"
+        android:icon="@drawable/ic_action_fav_fill_white"
+        android:title="Favourite" />
+
+    <item
+        android:id="@+id/navigation_map"
+        android:icon="@drawable/ic_action_map"
+        android:title="Map" />
 
 </menu>

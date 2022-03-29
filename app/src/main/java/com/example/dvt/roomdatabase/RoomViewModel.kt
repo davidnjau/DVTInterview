@@ -44,6 +44,16 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
         repository.getForecastWeatherList()
 
     }
+    fun getFavWeatherList()= runBlocking {
+
+        repository.getFavWeatherList()
+
+    }
+    fun getFavLocationsDetails(context: Context)= runBlocking {
+
+        repository.getFavLocationsDetails(context)
+
+    }
     fun addFavWeather(context: Context){
         CoroutineScope(Dispatchers.IO).launch {
             repository.addFavWeather(context)

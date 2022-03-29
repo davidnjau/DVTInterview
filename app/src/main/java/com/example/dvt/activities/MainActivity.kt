@@ -125,9 +125,19 @@ class MainActivity : AppCompatActivity() {
                     return@OnNavigationItemSelectedListener true
                 }
 
-                R.id.navigation_profile -> {
-//                    val intent = Intent(this, Profile::class.java)
-//                    startActivity(intent)
+//                R.id.navigation_profile -> {
+////                    val intent = Intent(this, Profile::class.java)
+////                    startActivity(intent)
+//                    return@OnNavigationItemSelectedListener true
+//                }
+                R.id.navigation_fav -> {
+                    val intent = Intent(this, FavouriteLocation::class.java)
+                    startActivity(intent)
+                    return@OnNavigationItemSelectedListener true
+                }
+                R.id.navigation_map -> {
+                    val intent = Intent(this, Maps::class.java)
+                    startActivity(intent)
                     return@OnNavigationItemSelectedListener true
                 }
             }

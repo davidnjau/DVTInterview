@@ -251,6 +251,12 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
 
     }
+    suspend fun getFavWeatherList(): List<FavouriteLocationInfo> {
+
+        return weatherDao.getFavLocations()
+
+
+    }
 
     suspend fun addFavWeather(context: Context){
 
@@ -351,6 +357,15 @@ class RoomDatabaseRepository(private val weatherDao: WeatherDao) {
 
     }
 
+    suspend fun getFavLocationsDetails(context: Context):FavouriteLocationInfo?{
+        val favLocationId = formatterHelper.retrieveSharedPreference(context, "favLocationId")
+        return if(favLocationId != null){
+            weatherDao.getFavLocationsDetails(favLocationId.toInt())
+        }else{
+            null
+        }
+
+    }
 
 
 }
